@@ -1,0 +1,15 @@
+  Commands for SlimeVolley:                                                                    
+                                                                                               
+  PY=/Users/willi1/miniconda3/envs/evo/bin/python                                              
+                                                                                               
+  # quick smoke test (~3s, just confirms it runs)                                              
+  JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_slimevolley_neat.py \                      
+      --max-iter=10 --pop-size=16 --n-repeats=2 --num-tests=4 --max-steps=500                  
+                                                            
+  # real training (expect hours on CPU; matches CMA defaults in train_slimevolley.py)          
+  JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_slimevolley_neat.py \                      
+      --max-iter=1000 --pop-size=128                                                           
+                                                            
+  # bigger topology budget if stock settings plateau                                           
+  JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_slimevolley_neat.py \
+      --max-iter=2000 --pop-size=128 --max-hidden=24 --max-connections=240 

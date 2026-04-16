@@ -1,0 +1,9 @@
+SlimeVolleyNEAT: 2026-04-16 03:12:37,925 [INFO] EvoJAX SlimeVolley NEAT
+SlimeVolleyNEAT: 2026-04-16 03:12:37,926 [INFO] ==============================
+SlimeVolleyNEAT: 2026-04-16 03:12:37,927 [INFO] NEAT: pop_size=16, n_inputs=12, n_outputs=3, max_hidden=16, max_connections=160, param_size=687
+SlimeVolleyNEAT: 2026-04-16 03:12:37,927 [INFO] use_for_loop=False
+SlimeVolleyNEAT: 2026-04-16 03:12:38,246 [INFO] Start to train for 10 iterations.
+SlimeVolleyNEAT: 2026-04-16 03:12:39,740 [INFO] Iter=5, size=16, max=-3.5000, avg=-5.7500, min=-7.0000, std=0.7906
+SlimeVolleyNEAT: 2026-04-16 03:12:41,070 [INFO] [TEST] Iter=5, #tests=4, max=-4.0000, avg=-4.7500, min=-5.0000, std=0.4330
+SlimeVolleyNEAT: 2026-04-16 03:12:41,199 [INFO] [TEST] Iter=10, #tests=4, max=-4.0000, avg=-4.7500, min=-5.0000, std=0.4330
+SlimeVolleyNEAT: 2026-04-16 03:12:41,217 [INFO] Training done, best_score=-4.7500
