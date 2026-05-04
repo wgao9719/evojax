@@ -1,0 +1,60 @@
+DeceptiveMaze: 2026-05-04 02:37:21,417 [INFO] ==================================================
+DeceptiveMaze: 2026-05-04 02:37:21,417 [INFO] Deceptive Maze — algo=simplega, use_novelty=False
+DeceptiveMaze: 2026-05-04 02:37:22,221 [INFO] Policy num_params=1538
+DeceptiveMaze: 2026-05-04 02:37:22,221 [INFO] use_for_loop=False
+DeceptiveMaze: 2026-05-04 02:37:22,235 [INFO] Start to train for 600 iterations.
+DeceptiveMaze: 2026-05-04 02:37:23,610 [INFO] Iter=20, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:24,641 [INFO] [TEST] Iter=25, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:24,790 [INFO] Iter=40, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:24,889 [INFO] [TEST] Iter=50, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:24,982 [INFO] Iter=60, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:25,132 [INFO] [TEST] Iter=75, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:25,186 [INFO] Iter=80, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:25,377 [INFO] Iter=100, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:25,383 [INFO] [TEST] Iter=100, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:25,570 [INFO] Iter=120, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:25,622 [INFO] [TEST] Iter=125, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:25,760 [INFO] Iter=140, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:25,861 [INFO] [TEST] Iter=150, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:25,964 [INFO] Iter=160, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:26,108 [INFO] [TEST] Iter=175, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:26,157 [INFO] Iter=180, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:26,339 [INFO] Iter=200, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:26,342 [INFO] [TEST] Iter=200, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:26,528 [INFO] Iter=220, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:26,580 [INFO] [TEST] Iter=225, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:26,728 [INFO] Iter=240, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:26,832 [INFO] [TEST] Iter=250, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:26,918 [INFO] Iter=260, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:27,060 [INFO] [TEST] Iter=275, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:27,107 [INFO] Iter=280, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:27,283 [INFO] Iter=300, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:27,289 [INFO] [TEST] Iter=300, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:27,475 [INFO] Iter=320, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:27,524 [INFO] [TEST] Iter=325, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:27,664 [INFO] Iter=340, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:27,761 [INFO] [TEST] Iter=350, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:27,848 [INFO] Iter=360, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:27,981 [INFO] [TEST] Iter=375, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:28,028 [INFO] Iter=380, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:28,216 [INFO] Iter=400, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:28,225 [INFO] [TEST] Iter=400, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:28,404 [INFO] Iter=420, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:28,454 [INFO] [TEST] Iter=425, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:28,661 [INFO] Iter=440, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:28,760 [INFO] [TEST] Iter=450, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:28,853 [INFO] Iter=460, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:28,995 [INFO] [TEST] Iter=475, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:29,044 [INFO] Iter=480, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:29,223 [INFO] Iter=500, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:29,227 [INFO] [TEST] Iter=500, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:29,417 [INFO] Iter=520, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:29,464 [INFO] [TEST] Iter=525, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:29,596 [INFO] Iter=540, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:29,690 [INFO] [TEST] Iter=550, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:29,778 [INFO] Iter=560, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:29,919 [INFO] [TEST] Iter=575, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:29,964 [INFO] Iter=580, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:30,151 [INFO] Iter=600, raw_max=0.000, raw_avg=0.000, raw_min=0.000
+DeceptiveMaze: 2026-05-04 02:37:30,162 [INFO] [TEST] Iter=600, #tests=32, raw_max=0.000, raw_avg=0.000, success_rate=0.000
+DeceptiveMaze: 2026-05-04 02:37:30,163 [INFO] Training done. best_raw_score=0.000

@@ -29,6 +29,7 @@ from .crfmnes import CRFMNES
 from .ars_native import ARS_native
 from .fpgpec import FPGPEC
 from .neat import NEAT
+from .novelty import NoveltyArchive
 
 Strategies = {
     "CMA": CMA,
@@ -67,4 +68,5 @@ __all__ = [
     "ARS_native",
     "FPGPEC",
     "NEAT",
+    "NoveltyArchive",
 ]

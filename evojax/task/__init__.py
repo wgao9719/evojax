@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from .base import VectorizedTask
+from .deceptive_maze import DeceptiveMaze, MazeState
 
 
-__all__ = ['VectorizedTask']
+__all__ = ['VectorizedTask', 'DeceptiveMaze', 'MazeState']
