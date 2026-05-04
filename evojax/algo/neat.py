@@ -37,6 +37,7 @@ import numpy as np
 
 from evojax.algo.base import NEAlgorithm
 from evojax.algo._neat_genome import (
+    CPPN_ACTIVATIONS,
     Genome,
     InnovationRegistry,
     Species,
@@ -44,6 +45,7 @@ from evojax.algo._neat_genome import (
     crossover,
     fitness_share,
     make_minimal_genome,
+    mutate_activations,
     mutate_add_connection,
     mutate_add_node,
     mutate_toggle_enable,
@@ -85,6 +87,9 @@ class NEAT(NEAlgorithm):
                  parsimony_weight: float = 0.001,
                  tournament_size: int = 3,
                  init_weight_scale: float = 1.0,
+                 log_topology_every: int = 10,
+                 activation_set: Optional[List[str]] = None,
+                 mutate_activation_rate: float = 0.0,
                  seed: int = 0,
                  logger: Optional[logging.Logger] = None):
         if logger is None:
@@ -114,10 +119,31 @@ class NEAT(NEAlgorithm):
         self.parsimony_weight = parsimony_weight
         self.tournament_size = int(tournament_size)
         self.init_weight_scale = init_weight_scale
+        self.log_topology_every = int(log_topology_every)
+
+        # Activation diversity: opt-in for HyperNEAT's CPPN. When the caller
+        # passes activation_set=None, behavior is identical to plain NEAT
+        # (single tanh activation, no activation slot in the flat vector).
+        if activation_set is None:
+            self._include_activations = False
+            self._activation_ids: List[int] = [0]
+            self._n_activations = 1
+        else:
+            unknown = [a for a in activation_set if a not in CPPN_ACTIVATIONS]
+            if unknown:
+                raise ValueError(
+                    f"Unknown activation(s) {unknown}; allowed: "
+                    f"{CPPN_ACTIVATIONS}")
+            self._include_activations = True
+            self._activation_ids = [CPPN_ACTIVATIONS.index(a)
+                                    for a in activation_set]
+            self._n_activations = len(self._activation_ids)
+        self.mutate_activation_rate = float(mutate_activation_rate)
 
         self.param_size = neat_param_size(self.n_inputs, self.n_outputs,
                                           self.max_hidden,
-                                          self.max_connections)
+                                          self.max_connections,
+                                          include_activations=self._include_activations)
 
         self._rng = np.random.default_rng(seed)
         self._innovation = InnovationRegistry()
@@ -130,7 +156,8 @@ class NEAT(NEAlgorithm):
         self._population: List[Genome] = [
             make_minimal_genome(self.n_inputs, self.n_outputs,
                                 self.max_hidden, self._innovation, self._rng,
-                                self.init_weight_scale)
+                                self.init_weight_scale,
+                                activation_ids=self._activation_ids)
             for _ in range(self.pop_size)
         ]
         # Pre-alloc the flat encoding buffer; re-used every ``ask``.
@@ -149,16 +176,18 @@ class NEAT(NEAlgorithm):
         """Write genome ``g`` into the pre-allocated slice ``out``.
 
         Slot boundaries:
-            [0,   C)        weight
-            [C,   2C)       enabled
-            [2C,  3C)       src
-            [3C,  4C)       dst
-            [4C,  4C + N)   bias
-            [4C+N, end)     hidden_active
+            [0,   C)             weight
+            [C,   2C)            enabled
+            [2C,  3C)            src
+            [3C,  4C)            dst
+            [4C,  4C + N)        bias
+            [4C+N, 4C+N+H)       hidden_active
+            [4C+N+H, 4C+2N+H)    activations  (only when enabled)
         """
         out.fill(0.0)
         C = self.max_connections
         N = self.n_inputs + self.n_outputs + self.max_hidden
+        H = self.max_hidden
         # Truncate if a genome over-generated (shouldn't happen, safety)
         conns = g.connections[:C]
         for i, c in enumerate(conns):
@@ -170,6 +199,9 @@ class NEAT(NEAlgorithm):
         hidden_start = self.n_inputs + self.n_outputs
         for h in g.hidden_nodes:
             out[4 * C + N + (h - hidden_start)] = 1.0
+        if self._include_activations:
+            out[4 * C + N + H:4 * C + 2 * N + H] = g.activations.astype(
+                np.float32)
 
     # --------------------------------------------------------------- interface
 
@@ -295,6 +327,53 @@ class NEAT(NEAlgorithm):
         self._population = next_pop
         self._generation += 1
 
+        if (self.log_topology_every > 0 and
+                self._generation % self.log_topology_every == 0):
+            self._log_topology()
+
+    def topology_stats(self) -> dict:
+        """Per-generation topology snapshot of the current population.
+
+        Returns counts of enabled connections and active hidden nodes
+        (pop-level max/avg/min) plus species count and best-genome sizes.
+        """
+        conns = np.array(
+            [sum(1 for c in g.connections if c.enabled)
+             for g in self._population], dtype=np.float64)
+        hidden = np.array(
+            [len(g.hidden_nodes) for g in self._population],
+            dtype=np.float64)
+        if self._best_genome is not None:
+            best_conns = sum(1 for c in self._best_genome.connections
+                             if c.enabled)
+            best_hidden = len(self._best_genome.hidden_nodes)
+        else:
+            best_conns = best_hidden = 0
+        return {
+            "generation": self._generation,
+            "species": len(self._species),
+            "conns_max": float(conns.max()) if conns.size else 0.0,
+            "conns_avg": float(conns.mean()) if conns.size else 0.0,
+            "conns_min": float(conns.min()) if conns.size else 0.0,
+            "hidden_max": float(hidden.max()) if hidden.size else 0.0,
+            "hidden_avg": float(hidden.mean()) if hidden.size else 0.0,
+            "hidden_min": float(hidden.min()) if hidden.size else 0.0,
+            "best_conns": int(best_conns),
+            "best_hidden": int(best_hidden),
+        }
+
+    def _log_topology(self) -> None:
+        s = self.topology_stats()
+        self.logger.info(
+            "[TOPO] Iter=%d, species=%d, "
+            "conns_max=%.1f, conns_avg=%.2f, conns_min=%.1f, "
+            "hidden_max=%.1f, hidden_avg=%.2f, hidden_min=%.1f, "
+            "best_conns=%d, best_hidden=%d",
+            s["generation"], s["species"],
+            s["conns_max"], s["conns_avg"], s["conns_min"],
+            s["hidden_max"], s["hidden_avg"], s["hidden_min"],
+            s["best_conns"], s["best_hidden"])
+
     def _breed_child(self,
                      pool: List[int],
                      fit: np.ndarray) -> Genome:
@@ -324,6 +403,8 @@ class NEAT(NEAlgorithm):
             mutate_add_node(g, self._rng, self._innovation,
                             self.max_connections)
         mutate_toggle_enable(g, self._rng, self.toggle_enable_rate)
+        mutate_activations(g, self._rng, self.mutate_activation_rate,
+                           self._activation_ids)
 
     # -------------------------------------------------------------- best/state
 

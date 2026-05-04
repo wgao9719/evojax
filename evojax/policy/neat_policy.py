@@ -17,8 +17,9 @@
 Pairs with :class:`evojax.algo.NEAT`. The flat parameter vector encodes a
 graph of at most ``max_hidden`` hidden nodes and ``max_connections`` edges;
 this policy builds a dense ``(N, N)`` weight matrix from the enabled
-connections and propagates activations for ``n_forward_iters`` steps, which
-naturally handles the recurrent connections NEAT may evolve.
+connections and propagates activations for ``n_forward_iters`` steps within
+a single env step, then carries the final node activations across env steps
+as persistent hidden state so recurrent edges can encode temporal memory.
 """
 
 import logging
@@ -28,12 +29,26 @@ from typing import Tuple
 
 import jax
 import jax.numpy as jnp
+from flax.struct import dataclass
 
 from evojax.algo._neat_genome import neat_param_size
 from evojax.policy.base import PolicyNetwork
 from evojax.policy.base import PolicyState
 from evojax.task.base import TaskState
 from evojax.util import create_logger
+
+
+@dataclass
+class NEATPolicyState(PolicyState):
+    """NEAT policy state.
+
+    ``hidden`` holds per-env node activations (shape ``(batch, n_nodes)``)
+    carried from one env step to the next. This is what makes evolved
+    recurrent edges functional — without it, a feedforward-only pass can't
+    integrate information across time.
+    """
+
+    hidden: jnp.ndarray
 
 
 class NEATPolicy(PolicyNetwork):
@@ -82,27 +97,40 @@ class NEATPolicy(PolicyNetwork):
             n_iters=self.n_forward_iters,
             output_act_fn=self.output_act_fn,
         )
-        self._forward_fn = jax.vmap(single_fn, in_axes=(0, 0))
+        self._forward_fn = jax.vmap(single_fn, in_axes=(0, 0, 0))
+
+    def reset(self, states: TaskState) -> NEATPolicyState:
+        batch = states.obs.shape[0]
+        keys = jax.random.split(jax.random.PRNGKey(0), batch)
+        hidden = jnp.zeros((batch, self.n_nodes), dtype=jnp.float32)
+        return NEATPolicyState(keys=keys, hidden=hidden)
 
     def get_actions(self,
                     t_states: TaskState,
                     params: jnp.ndarray,
-                    p_states: PolicyState) -> Tuple[jnp.ndarray, PolicyState]:
-        actions = self._forward_fn(params, t_states.obs)
-        return actions, p_states
+                    p_states: NEATPolicyState,
+                    ) -> Tuple[jnp.ndarray, NEATPolicyState]:
+        actions, new_hidden = self._forward_fn(
+            params, t_states.obs, p_states.hidden)
+        return actions, p_states.replace(hidden=new_hidden)
 
 
 def _neat_forward_single(flat: jnp.ndarray,
                          obs: jnp.ndarray,
+                         prev_hidden: jnp.ndarray,
                          n_inputs: int,
                          n_outputs: int,
                          max_hidden: int,
                          max_connections: int,
                          n_iters: int,
-                         output_act_fn: str) -> jnp.ndarray:
+                         output_act_fn: str,
+                         ) -> Tuple[jnp.ndarray, jnp.ndarray]:
     """Forward pass for a single genome's flat vector on a single observation.
 
-    ``jax.vmap`` lifts this over (pop_size, num_envs).
+    ``jax.vmap`` lifts this over (pop_size * n_repeats, ...). Returns both the
+    action and the final node activations so the caller can carry them into
+    the next env step — this is what makes evolved recurrent edges
+    functional as temporal memory rather than just within-step settling.
     """
     N = n_inputs + n_outputs + max_hidden
     C = max_connections
@@ -123,9 +151,10 @@ def _neat_forward_single(flat: jnp.ndarray,
     W = jnp.zeros((N, N), dtype=jnp.float32)
     W = W.at[dst, src].add(weight * enabled)
 
-    # Clamp inputs each iteration so they stay equal to obs regardless of any
-    # recurrent edges feeding back into input indices.
-    a = jnp.zeros(N, dtype=jnp.float32)
+    # Start from previous hidden state (zeroed on reset). Clamp inputs to the
+    # current obs each inner iter so recurrent edges feeding back into input
+    # indices don't overwrite the observation.
+    a = prev_hidden
     a = a.at[:n_inputs].set(obs)
     for _ in range(n_iters):
         a_new = jnp.tanh(W @ a + bias) * node_mask
@@ -135,10 +164,12 @@ def _neat_forward_single(flat: jnp.ndarray,
     if output_act_fn == "tanh":
         # Hidden layers already used tanh; re-apply so a NEAT genome with no
         # hidden layer still emits a bounded action.
-        return jnp.tanh(out)
+        action = jnp.tanh(out)
     elif output_act_fn == "softmax":
-        return jax.nn.softmax(out, axis=-1)
+        action = jax.nn.softmax(out, axis=-1)
     elif output_act_fn == "linear":
-        return out
+        action = out
     else:
         raise ValueError(f"Unsupported output_act_fn: {output_act_fn}")
+
+    return action, a

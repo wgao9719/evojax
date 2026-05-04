@@ -67,6 +67,16 @@ def get_obs(state: jnp.ndarray) -> jnp.ndarray:
     return jnp.array([x, x_dot, jnp.cos(theta), jnp.sin(theta), theta_dot])
 
 
+def get_obs_no_velocity(state: jnp.ndarray) -> jnp.ndarray:
+    x, _, theta, _ = state
+    return jnp.array([x, jnp.cos(theta), jnp.sin(theta)])
+
+
+def get_obs_pomdp(state: jnp.ndarray) -> jnp.ndarray:
+    _, _, theta, _ = state
+    return jnp.array([jnp.cos(theta), jnp.sin(theta)])
+
+
 def get_reward(state: jnp.ndarray) -> jnp.float32:
     x, x_dot, theta, theta_dot = state
     reward_theta = (jnp.cos(theta) + 1.0) / 2.0
@@ -113,10 +123,20 @@ class CartPoleSwingUp(VectorizedTask):
     def __init__(self,
                  max_steps: int = 1000,
                  harder: bool = False,
-                 test: bool = False):
+                 test: bool = False,
+                 no_velocity: bool = False,
+                 no_position: bool = False):
 
         self.max_steps = max_steps
-        self.obs_shape = tuple([5, ])
+        if no_position:
+            obs_fn = get_obs_pomdp
+            self.obs_shape = tuple([2, ])
+        elif no_velocity:
+            obs_fn = get_obs_no_velocity
+            self.obs_shape = tuple([3, ])
+        else:
+            obs_fn = get_obs
+            self.obs_shape = tuple([5, ])
         self.act_shape = tuple([1, ])
         self.test = test
         if harder:
@@ -127,7 +147,7 @@ class CartPoleSwingUp(VectorizedTask):
         def reset_fn(key):
             next_key, key = random.split(key)
             state = get_init_state_fn(key)
-            return State(state=state, obs=get_obs(state),
+            return State(state=state, obs=obs_fn(state),
                          steps=jnp.zeros((), dtype=int), key=next_key)
         self._reset_fn = jax.jit(jax.vmap(reset_fn))
 
@@ -140,7 +160,7 @@ class CartPoleSwingUp(VectorizedTask):
             next_key, key = random.split(state.key)
             cur_state = jax.lax.cond(
                 done, lambda x: get_init_state_fn(key), lambda x: x, cur_state)
-            return State(state=cur_state, obs=get_obs(state=cur_state),
+            return State(state=cur_state, obs=obs_fn(cur_state),
                          steps=steps, key=next_key), reward, done
         self._step_fn = jax.jit(jax.vmap(step_fn))
 

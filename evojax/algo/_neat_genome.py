@@ -31,10 +31,19 @@ from typing import Tuple
 import numpy as np
 
 
+# CPPN-style activation set. Index into this list = activation ID stored in
+# the genome. Index 0 is tanh so the default (all-zeros) genome encoding
+# behaves identically to plain NEAT.
+CPPN_ACTIVATIONS: List[str] = [
+    "tanh", "sin", "gauss", "abs", "sigmoid", "identity", "relu",
+]
+
+
 def neat_param_size(n_inputs: int,
                     n_outputs: int,
                     max_hidden: int,
-                    max_connections: int) -> int:
+                    max_connections: int,
+                    include_activations: bool = False) -> int:
     """Size of the flat genome vector shared by algorithm and policy.
 
     Layout (all float32, concatenated in this order):
@@ -44,9 +53,15 @@ def neat_param_size(n_inputs: int,
         dst            (max_connections,)  # integer-valued float
         bias           (n_inputs + n_outputs + max_hidden,)
         hidden_active  (max_hidden,)       # 0.0 / 1.0
+        activations    (n_inputs + n_outputs + max_hidden,)
+            # only when ``include_activations=True``; integer-valued float
+            # ID into ``CPPN_ACTIVATIONS``. Used by HyperNEAT's CPPN.
     """
     n_nodes = n_inputs + n_outputs + max_hidden
-    return 4 * max_connections + n_nodes + max_hidden
+    base = 4 * max_connections + n_nodes + max_hidden
+    if include_activations:
+        base += n_nodes
+    return base
 
 
 @dataclass
@@ -66,11 +81,14 @@ class Genome:
     hidden_nodes: Set[int] = field(default_factory=set)
     connections: List[ConnGene] = field(default_factory=list)
     biases: Optional[np.ndarray] = None
+    activations: Optional[np.ndarray] = None  # int8 ID per node; 0 = tanh
 
     def __post_init__(self) -> None:
         n_nodes = self.n_inputs + self.n_outputs + self.max_hidden
         if self.biases is None:
             self.biases = np.zeros(n_nodes, dtype=np.float32)
+        if self.activations is None:
+            self.activations = np.zeros(n_nodes, dtype=np.int8)
 
     @property
     def n_nodes(self) -> int:
@@ -104,6 +122,7 @@ class Genome:
             connections=[ConnGene(c.src, c.dst, c.weight, c.enabled,
                                   c.innovation) for c in self.connections],
             biases=self.biases.copy(),
+            activations=self.activations.copy(),
         )
 
 
@@ -149,8 +168,16 @@ def make_minimal_genome(n_inputs: int,
                         max_hidden: int,
                         registry: InnovationRegistry,
                         rng: np.random.Generator,
-                        init_weight_scale: float = 1.0) -> Genome:
-    """Fully connected inputs -> outputs with small random weights."""
+                        init_weight_scale: float = 1.0,
+                        activation_ids: Optional[List[int]] = None) -> Genome:
+    """Fully connected inputs -> outputs with small random weights.
+
+    When ``activation_ids`` has more than one entry, hidden-node activation
+    IDs are sampled uniformly from it (CPPN init). IDs are positions into
+    the global ``CPPN_ACTIVATIONS`` table so the policy can decode them
+    without sharing config. Inputs and outputs keep activation 0 (tanh)
+    so the substrate sees stable I/O regardless of CPPN mutations.
+    """
     g = Genome(n_inputs=n_inputs, n_outputs=n_outputs, max_hidden=max_hidden)
     for src in g.input_range:
         for dst in g.output_range:
@@ -160,6 +187,10 @@ def make_minimal_genome(n_inputs: int,
                 ConnGene(src=src, dst=dst, weight=w, enabled=True,
                          innovation=innov))
     g.biases = rng.normal(0.0, 0.1, size=g.n_nodes).astype(np.float32)
+    if activation_ids and len(activation_ids) > 1:
+        hidden_start = n_inputs + n_outputs
+        sampled = rng.choice(activation_ids, size=max_hidden)
+        g.activations[hidden_start:] = sampled.astype(np.int8)
     return g
 
 
@@ -262,6 +293,25 @@ def mutate_toggle_enable(g: Genome,
             c.enabled = not c.enabled
 
 
+def mutate_activations(g: Genome,
+                       rng: np.random.Generator,
+                       rate: float,
+                       activation_ids: List[int]) -> None:
+    """Re-roll activation IDs on hidden nodes with probability ``rate``.
+
+    Only mutates hidden nodes; inputs/outputs stay at activation 0 so the
+    substrate query always reads the CPPN's output the same way. ``rate``
+    is per-node, so ``len(activation_ids)*rate*max_hidden`` is roughly the
+    expected per-genome activation churn.
+    """
+    if len(activation_ids) <= 1 or rate <= 0.0:
+        return
+    hidden_start = g.n_inputs + g.n_outputs
+    for i in range(hidden_start, g.n_nodes):
+        if rng.random() < rate:
+            g.activations[i] = int(rng.choice(activation_ids))
+
+
 # -----------------------------------------------------------------------------
 # Crossover
 # -----------------------------------------------------------------------------
@@ -292,10 +342,15 @@ def crossover(parent_a: Genome,
     child = Genome(n_inputs=fitter.n_inputs, n_outputs=fitter.n_outputs,
                    max_hidden=fitter.max_hidden)
     child.biases = fitter.biases.copy()
-    # Average biases on matching nodes if the structural footprint overlaps
+    child.activations = fitter.activations.copy()
+    # Average biases on matching nodes if the structural footprint overlaps.
+    # For activations, inherit from a random parent on overlap (averaging
+    # categorical IDs is meaningless).
     overlap = fitter.hidden_nodes & other.hidden_nodes
     for h in overlap:
         child.biases[h] = 0.5 * (fitter.biases[h] + other.biases[h])
+        if rng.random() < 0.5:
+            child.activations[h] = other.activations[h]
 
     all_innov = set(by_innov_a.keys()) | set(by_innov_b.keys())
     for innov in sorted(all_innov):

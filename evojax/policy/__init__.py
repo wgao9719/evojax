@@ -18,7 +18,10 @@ from .mlp_pi import PermutationInvariantPolicy
 from .convnet import ConvNetPolicy
 from .seq2seq import Seq2seqPolicy
 from .neat_policy import NEATPolicy
+from .hyperneat_policy import HyperNEATPolicy
+from ._substrate import Substrate, make_grid_substrate
 
 
 __all__ = ['PolicyNetwork', 'MLPPolicy', 'PermutationInvariantPolicy',
-           'ConvNetPolicy', 'Seq2seqPolicy', 'NEATPolicy']
+           'ConvNetPolicy', 'Seq2seqPolicy', 'NEATPolicy',
+           'HyperNEATPolicy', 'Substrate', 'make_grid_substrate']

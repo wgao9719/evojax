@@ -1,15 +1,110 @@
-  Commands for SlimeVolley:                                                                    
-                                                                                               
-  PY=/Users/willi1/miniconda3/envs/evo/bin/python                                              
-                                                                                               
-  # quick smoke test (~3s, just confirms it runs)                                              
-  JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_slimevolley_neat.py \                      
-      --max-iter=10 --pop-size=16 --n-repeats=2 --num-tests=4 --max-steps=500                  
-                                                            
-  # real training (expect hours on CPU; matches CMA defaults in train_slimevolley.py)          
-  JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_slimevolley_neat.py \                      
-      --max-iter=1000 --pop-size=128                                                           
-                                                            
-  # bigger topology budget if stock settings plateau                                           
-  JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_slimevolley_neat.py \
-      --max-iter=2000 --pop-size=128 --max-hidden=24 --max-connections=240 
+Commands for SlimeVolley:                                                                    
+                                                                                            
+PY=/Users/willi1/miniconda3/envs/evo/bin/python                                              
+                                                                                            
+# quick smoke test (~3s, just confirms it runs)                                              
+JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_slimevolley_neat.py \                      
+    --max-iter=10 --pop-size=16 --n-repeats=2 --num-tests=4 --max-steps=500                  
+                                                        
+# real training (expect hours on CPU; matches CMA defaults in train_slimevolley.py)          
+JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_slimevolley_neat.py \                      
+    --max-iter=1000 --pop-size=128                                                           
+                                                        
+# bigger topology budget if stock settings plateau                                           
+JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_slimevolley_neat.py \
+    --max-iter=2000 --pop-size=128 --max-hidden=24 --max-connections=240 
+
+
+
+JAX_PLATFORMS=cpu PYTHONPATH=. python -c "                                                   
+from evojax import Trainer                                                                   
+from evojax.task.slimevolley import SlimeVolley                                              
+from evojax.policy import MLPPolicy                                                          
+from evojax.algo import SimpleGA                                                             
+tr = SlimeVolley(test=False, max_steps=3000); te = SlimeVolley(test=True, max_steps=3000)    
+p = MLPPolicy(input_dim=tr.obs_shape[0], hidden_dims=[20], output_dim=tr.act_shape[0])       
+s = SimpleGA(pop_size=128, param_size=p.num_params, sigma=0.1)                               
+Trainer(policy=p, solver=s, train_task=tr, test_task=te,                                     
+        max_iter=1000, log_interval=10, test_interval=50,                                     
+        n_repeats=8, n_evaluations=50,                                                     
+        seed=0, log_dir='./log/slimevolley_simplega').run()                                  
+"
+
+
+
+Commands for cartpole:
+
+PY=/Users/willi1/miniconda3/envs/evo/bin/python                                              
+                                                                                            
+NEAT — CartPole easy
+                                                                                            
+XLA_FLAGS='--xla_force_host_platform_device_count=8' \
+JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_cartpole_neat.py \                         
+    --easy --max-iter=500 --pop-size=128 \                                                   
+    --num-tests=32 --n-repeats=16 \                                                          
+    --max-hidden=10 --max-connections=80                                                     
+                                                                                            
+Log lands in ./log/cartpole_neat_easy/.                                                      
+                                                                                            
+NEAT — CartPole hard                                                                         
+                
+XLA_FLAGS='--xla_force_host_platform_device_count=8' \
+JAX_PLATFORMS=cpu PYTHONPATH=. $PY examples/train_cartpole_neat.py \
+    --max-iter=1000 --pop-size=128 \
+    --num-tests=32 --n-repeats=16 \
+    --max-hidden=16 --max-connections=160 \
+    --compat-threshold=2.0 --add-node-rate=0.02 --add-connection-rate=0.03
+
+XLA_FLAGS='--xla_force_host_platform_device_count=8' \                                       
+JAX_PLATFORMS=cpu PYTHONPATH=. $PY -c "
+from evojax import Trainer                                                                   
+from evojax.task.cartpole import CartPoleSwingUp
+from evojax.policy import MLPPolicy                                                          
+from evojax.algo import SimpleGA
+tr = CartPoleSwingUp(test=False, harder=False)                                               
+te = CartPoleSwingUp(test=True,  harder=False)
+p = MLPPolicy(input_dim=tr.obs_shape[0], hidden_dims=[32, 32], output_dim=tr.act_shape[0])   
+s = SimpleGA(pop_size=128, param_size=p.num_params, sigma=0.05, seed=0)
+Trainer(policy=p, solver=s, train_task=tr, test_task=te,                                     
+        max_iter=500, log_interval=10, test_interval=50,                                     
+        n_repeats=16, n_evaluations=32,                                                      
+        seed=0, log_dir='./log/cartpole_simplega_easy').run()                                
+"   
+
+XLA_FLAGS='--xla_force_host_platform_device_count=8' \
+JAX_PLATFORMS=cpu PYTHONPATH=. $PY -c "
+from evojax import Trainer
+from evojax.task.cartpole import CartPoleSwingUp
+from evojax.policy import MLPPolicy
+from evojax.algo import SimpleGA
+tr = CartPoleSwingUp(test=False, harder=True)
+te = CartPoleSwingUp(test=True,  harder=True)
+p = MLPPolicy(input_dim=tr.obs_shape[0], hidden_dims=[32, 32], output_dim=tr.act_shape[0])
+s = SimpleGA(pop_size=128, param_size=p.num_params, sigma=0.05, seed=0)
+Trainer(policy=p, solver=s, train_task=tr, test_task=te,
+        max_iter=1000, log_interval=10, test_interval=50,
+        n_repeats=16, n_evaluations=32,
+        seed=0, log_dir='./log/cartpole_simplega_hard').run()
+"
+
+
+Commands for cartpole (no-velocity, partial-obs):
+
+NEAT — recurrence should actually help here
+
+PY=/Users/willi1/miniconda3/envs/evo/bin/python; XLA_FLAGS='--xla_force_host_platform_device_count=8' JAX_PLATFORMS=cpu PYTHONPATH=. $PY -c "from evojax import Trainer; from evojax.task.cartpole import CartPoleSwingUp; from evojax.policy import NEATPolicy; from evojax.algo import NEAT; tr=CartPoleSwingUp(test=False,harder=True,no_velocity=True); te=CartPoleSwingUp(test=True,harder=True,no_velocity=True); p=NEATPolicy(n_inputs=3,n_outputs=1,max_hidden=20,max_connections=160,n_forward_iters=6); s=NEAT(pop_size=128,n_inputs=3,n_outputs=1,max_hidden=20,max_connections=160,compat_threshold=1.5,parsimony_weight=0.0,add_node_rate=0.08,add_connection_rate=0.15,seed=0); Trainer(policy=p,solver=s,train_task=tr,test_task=te,max_iter=3000,log_interval=10,test_interval=50,n_repeats=16,n_evaluations=32,seed=0,log_dir='./log/cartpole_nv_neat_hard').run()"
+
+SimpleGA — feedforward baseline, should hit a ceiling without memory
+
+PY=/Users/willi1/miniconda3/envs/evo/bin/python; XLA_FLAGS='--xla_force_host_platform_device_count=8' JAX_PLATFORMS=cpu PYTHONPATH=. $PY -c "from evojax import Trainer; from evojax.task.cartpole import CartPoleSwingUp; from evojax.policy import MLPPolicy; from evojax.algo import SimpleGA; tr=CartPoleSwingUp(test=False,harder=True,no_velocity=True); te=CartPoleSwingUp(test=True,harder=True,no_velocity=True); p=MLPPolicy(input_dim=tr.obs_shape[0],hidden_dims=[32,32],output_dim=tr.act_shape[0]); s=SimpleGA(pop_size=128,param_size=p.num_params,sigma=0.05,seed=0); Trainer(policy=p,solver=s,train_task=tr,test_task=te,max_iter=3000,log_interval=10,test_interval=50,n_repeats=16,n_evaluations=32,seed=0,log_dir='./log/cartpole_nv_simplega_hard').run()"
+
+
+Commands for cartpole (pure POMDP: no velocity AND no position; 6000 iters; n_repeats=32):
+
+NEAT — recurrence is the only way to integrate position from theta history
+
+XLA_FLAGS='--xla_force_host_platform_device_count=8' JAX_PLATFORMS=cpu PYTHONPATH=. /Users/willi1/miniconda3/envs/evo/bin/python -c "from evojax import Trainer; from evojax.task.cartpole import CartPoleSwingUp; from evojax.policy import NEATPolicy; from evojax.algo import NEAT; tr=CartPoleSwingUp(test=False,harder=True,no_velocity=True,no_position=True); te=CartPoleSwingUp(test=True,harder=True,no_velocity=True,no_position=True); p=NEATPolicy(n_inputs=2,n_outputs=1,max_hidden=20,max_connections=160,n_forward_iters=6); s=NEAT(pop_size=128,n_inputs=2,n_outputs=1,max_hidden=20,max_connections=160,compat_threshold=1.5,parsimony_weight=0.0,add_node_rate=0.08,add_connection_rate=0.15,seed=0); Trainer(policy=p,solver=s,train_task=tr,test_task=te,max_iter=6000,log_interval=10,test_interval=50,n_repeats=32,n_evaluations=32,seed=0,log_dir='./log/cartpole_pomdp_neat_hard').run()"
+
+SimpleGA — feedforward MLP, structurally cannot integrate over time
+
+XLA_FLAGS='--xla_force_host_platform_device_count=8' JAX_PLATFORMS=cpu PYTHONPATH=. /Users/willi1/miniconda3/envs/evo/bin/python -c "from evojax import Trainer; from evojax.task.cartpole import CartPoleSwingUp; from evojax.policy import MLPPolicy; from evojax.algo import SimpleGA; tr=CartPoleSwingUp(test=False,harder=True,no_velocity=True,no_position=True); te=CartPoleSwingUp(test=True,harder=True,no_velocity=True,no_position=True); p=MLPPolicy(input_dim=tr.obs_shape[0],hidden_dims=[32,32],output_dim=tr.act_shape[0]); s=SimpleGA(pop_size=128,param_size=p.num_params,sigma=0.05,seed=0); Trainer(policy=p,solver=s,train_task=tr,test_task=te,max_iter=6000,log_interval=10,test_interval=50,n_repeats=32,n_evaluations=32,seed=0,log_dir='./log/cartpole_pomdp_simplega_hard').run()"

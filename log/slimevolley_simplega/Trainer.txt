@@ -1,0 +1,122 @@
+Trainer: 2026-04-16 04:05:44,354 [INFO] use_for_loop=False
+Trainer: 2026-04-16 04:05:44,373 [INFO] Start to train for 1000 iterations.
+Trainer: 2026-04-16 04:06:06,671 [INFO] Iter=10, size=128, max=-27.5000, avg=-31.3994, min=-36.2500, std=1.6359
+Trainer: 2026-04-16 04:06:25,549 [INFO] Iter=20, size=128, max=-23.7500, avg=-29.8008, min=-35.1250, std=1.8882
+Trainer: 2026-04-16 04:06:44,093 [INFO] Iter=30, size=128, max=-21.3750, avg=-27.5645, min=-33.8750, std=2.3338
+Trainer: 2026-04-16 04:07:04,298 [INFO] Iter=40, size=128, max=-21.7500, avg=-27.0879, min=-35.2500, std=2.1147
+Trainer: 2026-04-16 04:07:23,806 [INFO] Iter=50, size=128, max=-19.6250, avg=-25.3027, min=-33.6250, std=2.3640
+Trainer: 2026-04-16 04:07:25,505 [INFO] [TEST] Iter=50, #tests=50, max=-3.0000, avg=-4.8400, min=-5.0000, std=0.4630
+Trainer: 2026-04-16 04:07:44,557 [INFO] Iter=60, size=128, max=-19.0000, avg=-24.3838, min=-32.1250, std=2.4357
+Trainer: 2026-04-16 04:08:03,940 [INFO] Iter=70, size=128, max=-17.6250, avg=-22.7393, min=-30.2500, std=2.4354
+Trainer: 2026-04-16 04:08:23,895 [INFO] Iter=80, size=128, max=-16.5000, avg=-21.8281, min=-30.5000, std=2.5189
+Trainer: 2026-04-16 04:08:43,112 [INFO] Iter=90, size=128, max=-16.2500, avg=-20.5771, min=-30.5000, std=2.7073
+Trainer: 2026-04-16 04:09:02,764 [INFO] Iter=100, size=128, max=-11.7500, avg=-20.3066, min=-30.0000, std=3.0441
+Trainer: 2026-04-16 04:09:02,918 [INFO] [TEST] Iter=100, #tests=50, max=-3.0000, avg=-4.8400, min=-5.0000, std=0.4176
+Trainer: 2026-04-16 04:09:22,210 [INFO] Iter=110, size=128, max=-10.7500, avg=-18.5996, min=-27.6250, std=2.7459
+Trainer: 2026-04-16 04:09:43,606 [INFO] Iter=120, size=128, max=-11.1250, avg=-17.7549, min=-27.1250, std=3.0221
+Trainer: 2026-04-16 04:10:11,186 [INFO] Iter=130, size=128, max=-10.8750, avg=-16.9170, min=-29.2500, std=3.2343
+Trainer: 2026-04-16 04:10:32,340 [INFO] Iter=140, size=128, max=-9.0000, avg=-16.3789, min=-27.7500, std=3.0005
+Trainer: 2026-04-16 04:10:52,514 [INFO] Iter=150, size=128, max=-10.5000, avg=-16.0459, min=-25.0000, std=2.9507
+Trainer: 2026-04-16 04:10:52,653 [INFO] [TEST] Iter=150, #tests=50, max=-3.0000, avg=-4.7800, min=-5.0000, std=0.5016
+Trainer: 2026-04-16 04:11:14,164 [INFO] Iter=160, size=128, max=-10.0000, avg=-16.0215, min=-24.5000, std=2.9329
+Trainer: 2026-04-16 04:11:33,246 [INFO] Iter=170, size=128, max=-9.2500, avg=-15.3799, min=-21.7500, std=2.2170
+Trainer: 2026-04-16 04:11:53,502 [INFO] Iter=180, size=128, max=-10.2500, avg=-14.6924, min=-21.5000, std=2.1880
+Trainer: 2026-04-16 04:12:13,413 [INFO] Iter=190, size=128, max=-10.2500, avg=-14.6318, min=-21.8750, std=2.3268
+Trainer: 2026-04-16 04:12:32,591 [INFO] Iter=200, size=128, max=-7.0000, avg=-13.8164, min=-19.3750, std=2.5308
+Trainer: 2026-04-16 04:12:32,751 [INFO] [TEST] Iter=200, #tests=50, max=-1.0000, avg=-4.4000, min=-5.0000, std=0.8718
+Trainer: 2026-04-16 04:12:51,953 [INFO] Iter=210, size=128, max=-8.5000, avg=-12.9863, min=-24.8750, std=2.4388
+Trainer: 2026-04-16 04:13:11,512 [INFO] Iter=220, size=128, max=-7.5000, avg=-12.3311, min=-21.2500, std=2.5809
+Trainer: 2026-04-16 04:13:31,428 [INFO] Iter=230, size=128, max=-7.6250, avg=-12.4209, min=-19.8750, std=2.6547
+Trainer: 2026-04-16 04:13:50,836 [INFO] Iter=240, size=128, max=-6.7500, avg=-11.4287, min=-18.5000, std=2.4259
+Trainer: 2026-04-16 04:14:11,725 [INFO] Iter=250, size=128, max=-5.0000, avg=-10.3213, min=-15.8750, std=2.1180
+Trainer: 2026-04-16 04:14:11,880 [INFO] [TEST] Iter=250, #tests=50, max=-2.0000, avg=-4.6600, min=-5.0000, std=0.6815
+Trainer: 2026-04-16 04:14:31,146 [INFO] Iter=260, size=128, max=-4.1250, avg=-10.3975, min=-16.2500, std=2.2025
+Trainer: 2026-04-16 04:14:49,663 [INFO] Iter=270, size=128, max=-4.5000, avg=-9.2061, min=-19.5000, std=2.8213
+Trainer: 2026-04-16 04:15:09,567 [INFO] Iter=280, size=128, max=-3.3750, avg=-8.4824, min=-17.7500, std=2.7511
+Trainer: 2026-04-16 04:15:30,533 [INFO] Iter=290, size=128, max=-3.6250, avg=-8.3877, min=-15.6250, std=2.3954
+Trainer: 2026-04-16 04:15:49,727 [INFO] Iter=300, size=128, max=-3.7500, avg=-8.4043, min=-17.2500, std=2.4758
+Trainer: 2026-04-16 04:15:49,887 [INFO] [TEST] Iter=300, #tests=50, max=-1.0000, avg=-3.9800, min=-5.0000, std=1.2081
+Trainer: 2026-04-16 04:16:09,099 [INFO] Iter=310, size=128, max=-3.1250, avg=-7.6963, min=-16.8750, std=2.5523
+Trainer: 2026-04-16 04:16:28,313 [INFO] Iter=320, size=128, max=-3.7500, avg=-7.8906, min=-17.7500, std=2.5575
+Trainer: 2026-04-16 04:16:47,081 [INFO] Iter=330, size=128, max=-3.3750, avg=-7.8828, min=-14.8750, std=2.0420
+Trainer: 2026-04-16 04:17:06,553 [INFO] Iter=340, size=128, max=-2.3750, avg=-7.6426, min=-18.3750, std=2.3991
+Trainer: 2026-04-16 04:17:25,806 [INFO] Iter=350, size=128, max=-2.3750, avg=-6.2754, min=-14.6250, std=2.1309
+Trainer: 2026-04-16 04:17:25,962 [INFO] [TEST] Iter=350, #tests=50, max=0.0000, avg=-3.5600, min=-5.0000, std=1.5641
+Trainer: 2026-04-16 04:17:45,392 [INFO] Iter=360, size=128, max=-1.6250, avg=-6.0195, min=-14.1250, std=2.4307
+Trainer: 2026-04-16 04:18:04,634 [INFO] Iter=370, size=128, max=-1.3750, avg=-5.6611, min=-14.8750, std=2.1985
+Trainer: 2026-04-16 04:18:24,028 [INFO] Iter=380, size=128, max=-1.7500, avg=-5.7041, min=-20.2500, std=2.6385
+Trainer: 2026-04-16 04:18:43,092 [INFO] Iter=390, size=128, max=-0.7500, avg=-4.7988, min=-12.1250, std=2.1492
+Trainer: 2026-04-16 04:19:02,372 [INFO] Iter=400, size=128, max=-0.6250, avg=-4.3076, min=-13.6250, std=2.3310
+Trainer: 2026-04-16 04:19:02,537 [INFO] [TEST] Iter=400, #tests=50, max=1.0000, avg=-1.8000, min=-5.0000, std=1.3115
+Trainer: 2026-04-16 04:19:21,377 [INFO] Iter=410, size=128, max=-0.7500, avg=-3.9590, min=-12.6250, std=2.2336
+Trainer: 2026-04-16 04:19:39,753 [INFO] Iter=420, size=128, max=-0.6250, avg=-3.6904, min=-14.1250, std=2.1353
+Trainer: 2026-04-16 04:19:58,538 [INFO] Iter=430, size=128, max=-0.3750, avg=-3.4004, min=-11.7500, std=2.2039
+Trainer: 2026-04-16 04:20:17,232 [INFO] Iter=440, size=128, max=-0.1250, avg=-2.9453, min=-16.8750, std=2.5152
+Trainer: 2026-04-16 04:20:35,645 [INFO] Iter=450, size=128, max=0.3750, avg=-2.8105, min=-9.3750, std=2.0085
+Trainer: 2026-04-16 04:20:35,800 [INFO] [TEST] Iter=450, #tests=50, max=2.0000, avg=-0.8600, min=-3.0000, std=1.1834
+Trainer: 2026-04-16 04:20:54,328 [INFO] Iter=460, size=128, max=0.0000, avg=-3.0166, min=-12.1250, std=2.0716
+Trainer: 2026-04-16 04:21:12,901 [INFO] Iter=470, size=128, max=-0.3750, avg=-3.4150, min=-12.6250, std=2.1811
+Trainer: 2026-04-16 04:21:31,895 [INFO] Iter=480, size=128, max=-0.1250, avg=-3.0791, min=-9.3750, std=1.7709
+Trainer: 2026-04-16 04:21:50,748 [INFO] Iter=490, size=128, max=-0.1250, avg=-3.2061, min=-9.8750, std=1.7838
+Trainer: 2026-04-16 04:22:12,616 [INFO] Iter=500, size=128, max=-0.3750, avg=-2.9814, min=-10.0000, std=1.8974
+Trainer: 2026-04-16 04:22:12,773 [INFO] [TEST] Iter=500, #tests=50, max=2.0000, avg=-1.1000, min=-5.0000, std=1.6279
+Trainer: 2026-04-16 04:22:32,030 [INFO] Iter=510, size=128, max=0.2500, avg=-2.7920, min=-13.5000, std=2.1164
+Trainer: 2026-04-16 04:22:49,850 [INFO] Iter=520, size=128, max=0.5000, avg=-2.5430, min=-11.0000, std=2.0766
+Trainer: 2026-04-16 04:23:06,507 [INFO] Iter=530, size=128, max=0.7500, avg=-2.0859, min=-8.0000, std=1.6118
+Trainer: 2026-04-16 04:23:23,183 [INFO] Iter=540, size=128, max=0.7500, avg=-1.6445, min=-7.1250, std=1.4698
+Trainer: 2026-04-16 04:23:39,556 [INFO] Iter=550, size=128, max=0.5000, avg=-1.6846, min=-9.2500, std=1.6077
+Trainer: 2026-04-16 04:23:39,679 [INFO] [TEST] Iter=550, #tests=50, max=2.0000, avg=0.1600, min=-2.0000, std=0.8090
+Trainer: 2026-04-16 04:23:56,026 [INFO] Iter=560, size=128, max=0.6250, avg=-1.8105, min=-12.7500, std=2.0389
+Trainer: 2026-04-16 04:24:12,400 [INFO] Iter=570, size=128, max=0.7500, avg=-1.5908, min=-9.8750, std=1.6290
+Trainer: 2026-04-16 04:24:28,703 [INFO] Iter=580, size=128, max=0.7500, avg=-1.3076, min=-5.1250, std=1.2862
+Trainer: 2026-04-16 04:24:45,045 [INFO] Iter=590, size=128, max=0.7500, avg=-1.2383, min=-7.3750, std=1.1728
+Trainer: 2026-04-16 04:25:01,572 [INFO] Iter=600, size=128, max=1.0000, avg=-1.5693, min=-15.2500, std=1.9155
+Trainer: 2026-04-16 04:25:01,693 [INFO] [TEST] Iter=600, #tests=50, max=3.0000, avg=0.0000, min=-3.0000, std=1.2166
+Trainer: 2026-04-16 04:25:17,938 [INFO] Iter=610, size=128, max=0.6250, avg=-1.1699, min=-5.2500, std=1.0766
+Trainer: 2026-04-16 04:25:34,249 [INFO] Iter=620, size=128, max=0.5000, avg=-1.3906, min=-5.8750, std=1.2994
+Trainer: 2026-04-16 04:25:50,577 [INFO] Iter=630, size=128, max=1.1250, avg=-0.9375, min=-7.0000, std=1.3758
+Trainer: 2026-04-16 04:26:07,165 [INFO] Iter=640, size=128, max=0.3750, avg=-1.1934, min=-7.2500, std=1.1879
+Trainer: 2026-04-16 04:26:23,703 [INFO] Iter=650, size=128, max=0.8750, avg=-0.9111, min=-6.5000, std=1.1284
+Trainer: 2026-04-16 04:26:23,821 [INFO] [TEST] Iter=650, #tests=50, max=2.0000, avg=-0.0400, min=-2.0000, std=0.8237
+Trainer: 2026-04-16 04:26:40,181 [INFO] Iter=660, size=128, max=0.5000, avg=-0.9658, min=-6.2500, std=1.1405
+Trainer: 2026-04-16 04:26:56,503 [INFO] Iter=670, size=128, max=0.5000, avg=-1.2529, min=-6.6250, std=1.2319
+Trainer: 2026-04-16 04:27:12,813 [INFO] Iter=680, size=128, max=0.5000, avg=-1.0322, min=-8.7500, std=1.2472
+Trainer: 2026-04-16 04:27:29,095 [INFO] Iter=690, size=128, max=0.5000, avg=-0.9814, min=-5.8750, std=1.0909
+Trainer: 2026-04-16 04:27:47,251 [INFO] Iter=700, size=128, max=0.5000, avg=-0.8721, min=-4.5000, std=0.9006
+Trainer: 2026-04-16 04:27:47,374 [INFO] [TEST] Iter=700, #tests=50, max=2.0000, avg=0.1800, min=-2.0000, std=0.7666
+Trainer: 2026-04-16 04:28:03,715 [INFO] Iter=710, size=128, max=0.6250, avg=-0.6504, min=-5.8750, std=1.0623
+Trainer: 2026-04-16 04:28:19,926 [INFO] Iter=720, size=128, max=0.7500, avg=-0.9922, min=-4.6250, std=0.9401
+Trainer: 2026-04-16 04:28:36,305 [INFO] Iter=730, size=128, max=0.8750, avg=-0.9043, min=-6.3750, std=1.0257
+Trainer: 2026-04-16 04:28:52,644 [INFO] Iter=740, size=128, max=0.5000, avg=-1.0928, min=-11.2500, std=1.5955
+Trainer: 2026-04-16 04:29:09,585 [INFO] Iter=750, size=128, max=0.5000, avg=-1.0840, min=-7.3750, std=1.2362
+Trainer: 2026-04-16 04:29:09,730 [INFO] [TEST] Iter=750, #tests=50, max=2.0000, avg=-0.4400, min=-3.0000, std=1.0613
+Trainer: 2026-04-16 04:29:26,275 [INFO] Iter=760, size=128, max=0.5000, avg=-0.8867, min=-12.8750, std=1.5202
+Trainer: 2026-04-16 04:29:42,487 [INFO] Iter=770, size=128, max=0.6250, avg=-0.7129, min=-4.6250, std=0.9718
+Trainer: 2026-04-16 04:29:58,779 [INFO] Iter=780, size=128, max=0.8750, avg=-0.6016, min=-6.5000, std=1.0609
+Trainer: 2026-04-16 04:30:15,229 [INFO] Iter=790, size=128, max=0.6250, avg=-0.6055, min=-3.6250, std=0.9195
+Trainer: 2026-04-16 04:30:31,479 [INFO] Iter=800, size=128, max=0.7500, avg=-0.6025, min=-3.7500, std=0.8748
+Trainer: 2026-04-16 04:30:31,612 [INFO] [TEST] Iter=800, #tests=50, max=3.0000, avg=0.1000, min=-2.0000, std=0.8775
+Trainer: 2026-04-16 04:30:47,960 [INFO] Iter=810, size=128, max=0.6250, avg=-0.7012, min=-5.3750, std=0.9913
+Trainer: 2026-04-16 04:31:04,411 [INFO] Iter=820, size=128, max=0.7500, avg=-0.5898, min=-5.7500, std=0.9988
+Trainer: 2026-04-16 04:31:20,832 [INFO] Iter=830, size=128, max=0.7500, avg=-0.5693, min=-8.3750, std=1.0096
+Trainer: 2026-04-16 04:31:37,148 [INFO] Iter=840, size=128, max=0.7500, avg=-0.4746, min=-7.5000, std=0.9717
+Trainer: 2026-04-16 04:31:53,504 [INFO] Iter=850, size=128, max=1.0000, avg=-0.2139, min=-6.1250, std=0.9992
+Trainer: 2026-04-16 04:31:53,633 [INFO] [TEST] Iter=850, #tests=50, max=3.0000, avg=0.2600, min=-1.0000, std=0.7158
+Trainer: 2026-04-16 04:32:10,017 [INFO] Iter=860, size=128, max=0.6250, avg=-0.4395, min=-3.3750, std=0.7153
+Trainer: 2026-04-16 04:32:26,650 [INFO] Iter=870, size=128, max=0.5000, avg=-0.5879, min=-7.2500, std=1.0009
+Trainer: 2026-04-16 04:32:42,940 [INFO] Iter=880, size=128, max=0.6250, avg=-0.6299, min=-6.8750, std=1.0160
+Trainer: 2026-04-16 04:32:59,274 [INFO] Iter=890, size=128, max=0.8750, avg=-0.5254, min=-5.5000, std=1.0295
+Trainer: 2026-04-16 04:33:15,750 [INFO] Iter=900, size=128, max=1.0000, avg=-0.3213, min=-3.2500, std=0.6457
+Trainer: 2026-04-16 04:33:15,876 [INFO] [TEST] Iter=900, #tests=50, max=1.0000, avg=0.2000, min=-1.0000, std=0.5657
+Trainer: 2026-04-16 04:33:32,270 [INFO] Iter=910, size=128, max=0.7500, avg=-0.4111, min=-4.2500, std=0.8098
+Trainer: 2026-04-16 04:33:48,610 [INFO] Iter=920, size=128, max=0.3750, avg=-0.3457, min=-2.1250, std=0.5474
+Trainer: 2026-04-16 04:34:05,093 [INFO] Iter=930, size=128, max=0.7500, avg=-0.2695, min=-2.2500, std=0.5488
+Trainer: 2026-04-16 04:34:21,448 [INFO] Iter=940, size=128, max=1.0000, avg=-0.3076, min=-5.6250, std=0.9725
+Trainer: 2026-04-16 04:34:37,782 [INFO] Iter=950, size=128, max=0.8750, avg=-0.2920, min=-4.5000, std=0.8233
+Trainer: 2026-04-16 04:34:37,905 [INFO] [TEST] Iter=950, #tests=50, max=2.0000, avg=-0.2200, min=-3.0000, std=0.8553
+Trainer: 2026-04-16 04:34:54,530 [INFO] Iter=960, size=128, max=0.7500, avg=-0.5273, min=-5.1250, std=0.9101
+Trainer: 2026-04-16 04:35:10,868 [INFO] Iter=970, size=128, max=0.7500, avg=-0.4424, min=-3.0000, std=0.7008
+Trainer: 2026-04-16 04:35:27,125 [INFO] Iter=980, size=128, max=0.6250, avg=-0.3135, min=-8.5000, std=1.2071
+Trainer: 2026-04-16 04:35:43,420 [INFO] Iter=990, size=128, max=0.8750, avg=-0.2754, min=-4.5000, std=0.7822
+Trainer: 2026-04-16 04:35:58,358 [INFO] [TEST] Iter=1000, #tests=50, max=2.0000, avg=-0.0600, min=-1.0000, std=0.7324
+Trainer: 2026-04-16 04:35:58,359 [INFO] Training done, best_score=0.2600
