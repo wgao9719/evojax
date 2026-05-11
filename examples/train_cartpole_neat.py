@@ -46,22 +46,40 @@ def parse_args():
     parser.add_argument("--add-connection-rate", type=float, default=0.05)
     parser.add_argument("--gpu-id", type=str)
     parser.add_argument("--easy", action="store_true")
+    parser.add_argument("--no-velocity", action="store_true",
+                        help="Use the partial-obs (no velocity) variant.")
+    parser.add_argument("--neat-protection",
+                        choices=["fitness", "improvement", "hybrid"],
+                        default="fitness")
+    parser.add_argument("--improvement-window", type=int, default=5)
+    parser.add_argument("--improvement-weight", type=float, default=0.5)
+    parser.add_argument("--telemetry", action="store_true")
+    parser.add_argument("--log-dir", type=str, default=None,
+                        help="Override default log dir.")
     parser.add_argument("--debug", action="store_true")
     return parser.parse_known_args()[0]
 
 
 def main(config):
     hard = not config.easy
-    log_dir = "./log/cartpole_neat_{}".format("hard" if hard else "easy")
+    if config.log_dir is None:
+        config.log_dir = "./log/cartpole_neat_{}".format(
+            "hard" if hard else "easy")
+    log_dir = config.log_dir
     os.makedirs(log_dir, exist_ok=True)
     logger = util.create_logger(name="CartPoleNEAT", log_dir=log_dir,
                                  debug=config.debug)
 
-    logger.info("EvoJAX CartPole NEAT Demo (%s)", "hard" if hard else "easy")
+    logger.info("EvoJAX CartPole NEAT Demo (%s%s, protection=%s)",
+                "hard" if hard else "easy",
+                ", no_velocity" if config.no_velocity else "",
+                config.neat_protection)
     logger.info("=" * 40)
 
-    train_task = CartPoleSwingUp(test=False, harder=hard)
-    test_task = CartPoleSwingUp(test=True, harder=hard)
+    train_task = CartPoleSwingUp(test=False, harder=hard,
+                                 no_velocity=config.no_velocity)
+    test_task = CartPoleSwingUp(test=True, harder=hard,
+                                no_velocity=config.no_velocity)
 
     policy = NEATPolicy(
         n_inputs=train_task.obs_shape[0],
@@ -72,6 +90,8 @@ def main(config):
         output_act_fn="tanh",
     )
 
+    telemetry_path = (os.path.join(log_dir, "species_history.csv")
+                      if config.telemetry else None)
     solver = NEAT(
         pop_size=config.pop_size,
         n_inputs=train_task.obs_shape[0],
@@ -82,6 +102,10 @@ def main(config):
         parsimony_weight=config.parsimony_weight,
         add_connection_rate=config.add_connection_rate,
         add_node_rate=config.add_node_rate,
+        protection_mode=config.neat_protection,
+        improvement_window=config.improvement_window,
+        improvement_weight=config.improvement_weight,
+        telemetry_path=telemetry_path,
         seed=config.seed,
         logger=logger,
     )
@@ -104,6 +128,10 @@ def main(config):
         logger=logger,
     )
     trainer.run(demo_mode=False)
+    if telemetry_path is not None:
+        out = solver.flush_telemetry()
+        if out:
+            logger.info("Wrote species telemetry -> %s", out)
 
 
 if __name__ == "__main__":

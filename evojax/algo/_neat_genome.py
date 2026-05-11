@@ -434,11 +434,20 @@ class Species:
     members: List[int] = field(default_factory=list)  # indices into population
     best_fitness: float = -np.inf
     stagnation: int = 0
+    # Stable, unique-across-the-run identifier. Assigned by NEAT after
+    # speciate() places members; preserved across generations via
+    # ``clone_shallow``. Defaults to -1 to flag "needs assignment".
+    species_id: int = -1
+    # Generation in which this species was first instantiated. Together with
+    # the algorithm's current generation gives the species' age.
+    birth_gen: int = -1
 
     def clone_shallow(self) -> "Species":
         s = Species(representative=self.representative.clone())
         s.best_fitness = self.best_fitness
         s.stagnation = self.stagnation
+        s.species_id = self.species_id
+        s.birth_gen = self.birth_gen
         return s
 
 

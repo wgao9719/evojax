@@ -82,10 +82,14 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+figures/
 
 # IPython
 profile_default/
 ipython_config.py
+
+paper_methods_and_results.tex
+log/
 
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is

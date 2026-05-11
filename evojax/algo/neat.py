@@ -26,7 +26,9 @@ mask per connection. Exceeding the max causes structural mutations to no-op.
 import copy
 import logging
 import pickle
+from collections import deque
 from typing import Any
+from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Union
@@ -53,7 +55,11 @@ from evojax.algo._neat_genome import (
     neat_param_size,
     speciate,
 )
+from evojax.algo.neat_telemetry import SpeciesGenStats, SpeciesHistory
 from evojax.util import create_logger
+
+
+_VALID_PROTECTION_MODES = ("fitness", "improvement", "hybrid")
 
 
 class NEAT(NEAlgorithm):
@@ -90,6 +96,10 @@ class NEAT(NEAlgorithm):
                  log_topology_every: int = 10,
                  activation_set: Optional[List[str]] = None,
                  mutate_activation_rate: float = 0.0,
+                 protection_mode: str = "fitness",
+                 improvement_window: int = 5,
+                 improvement_weight: float = 0.5,
+                 telemetry_path: Optional[str] = None,
                  seed: int = 0,
                  logger: Optional[logging.Logger] = None):
         if logger is None:
@@ -145,6 +155,14 @@ class NEAT(NEAlgorithm):
                                           self.max_connections,
                                           include_activations=self._include_activations)
 
+        if protection_mode not in _VALID_PROTECTION_MODES:
+            raise ValueError(
+                f"protection_mode must be one of {_VALID_PROTECTION_MODES}, "
+                f"got {protection_mode!r}")
+        self.protection_mode = protection_mode
+        self.improvement_window = int(improvement_window)
+        self.improvement_weight = float(improvement_weight)
+
         self._rng = np.random.default_rng(seed)
         self._innovation = InnovationRegistry()
         self._species: List[Species] = []
@@ -152,6 +170,13 @@ class NEAT(NEAlgorithm):
         self._best_fitness: float = -np.inf
         self._best_genome: Optional[Genome] = None
         self._best_flat: np.ndarray = np.zeros(self.param_size, dtype=np.float32)
+        # Stable per-species ID counter, plus a per-species rolling window of
+        # raw best fitness used to compute improvement rate for Phase 2's
+        # adaptive offspring budgets and Phase 1's diagnostic plots.
+        self._next_species_id: int = 0
+        self._species_max_fit_history: Dict[int, deque] = {}
+        # Telemetry collector. Always created; only flushed if a path is set.
+        self._telemetry = SpeciesHistory(output_path=telemetry_path)
 
         self._population: List[Genome] = [
             make_minimal_genome(self.n_inputs, self.n_outputs,
@@ -240,6 +265,16 @@ class NEAT(NEAlgorithm):
                                  self.disjoint_coef, self.excess_coef,
                                  self.weight_diff_coef, self._rng)
 
+        # Assign IDs / birth_gen to brand-new species (those preserved across
+        # generations already have these set via clone_shallow).
+        for sp in self._species:
+            if sp.species_id < 0:
+                sp.species_id = self._next_species_id
+                sp.birth_gen = self._generation
+                self._next_species_id += 1
+                self._species_max_fit_history[sp.species_id] = deque(
+                    maxlen=self.improvement_window + 1)
+
         # Update species stagnation counters using raw max fitness per species.
         for sp in self._species:
             sp_best = max(raw_fit[m] for m in sp.members)
@@ -248,10 +283,12 @@ class NEAT(NEAlgorithm):
                 sp.stagnation = 0
             else:
                 sp.stagnation += 1
+            # Record this gen's best for the improvement-rate window.
+            self._species_max_fit_history[sp.species_id].append(float(sp_best))
 
-        # Retire stagnant species (keep the global best-performing one).
+        # --- Retirement: identify which species die this generation ---
+        retired_ids: set = set()
         if len(self._species) > 1:
-            # Species with the highest best_fitness is protected.
             protect_idx = int(np.argmax([s.best_fitness
                                          for s in self._species]))
             kept: List[Species] = []
@@ -259,8 +296,22 @@ class NEAT(NEAlgorithm):
                 if (sp.stagnation < self.stagnation_patience or
                         i == protect_idx):
                     kept.append(sp)
+                else:
+                    retired_ids.add(sp.species_id)
             if kept:
                 self._species = kept
+
+        # --- Compute improvement rate per surviving species ---
+        # Used for the adaptive budget mode AND telemetry. NaN for species
+        # younger than the window — those fall back to fitness-only weighting.
+        improvement_rates = np.zeros(len(self._species), dtype=np.float64)
+        for i, sp in enumerate(self._species):
+            hist = self._species_max_fit_history[sp.species_id]
+            if len(hist) >= 2:
+                rate = max(0.0, hist[-1] - hist[0])
+            else:
+                rate = float("nan")
+            improvement_rates[i] = rate
 
         # --- Fitness sharing (shift to positive first) ---
         fit_min = float(np.min(adj_fit))
@@ -268,9 +319,17 @@ class NEAT(NEAlgorithm):
         shared = fitness_share(shifted, self._species)
 
         # --- Offspring budget per species ---
-        species_totals = np.array(
+        # The weight vector that drives proportional allocation depends on
+        # ``protection_mode``. ``fitness`` reproduces classic NEAT;
+        # ``improvement`` weights species by recent Δmax_fit (with a fitness
+        # fallback for species younger than the window so newborns aren't
+        # immediately starved); ``hybrid`` is a normalized blend.
+        fitness_totals = np.array(
             [sum(shared[m] for m in sp.members) for sp in self._species],
             dtype=np.float64)
+
+        species_totals = self._compute_species_weights(
+            fitness_totals, improvement_rates)
         total = float(species_totals.sum())
         if total <= 0.0 or len(self._species) == 0:
             budgets = np.full(max(1, len(self._species)),
@@ -278,6 +337,11 @@ class NEAT(NEAlgorithm):
         else:
             budgets = np.floor(species_totals / total * self.pop_size).astype(
                 int)
+        # Floor: any species with ≥2 members keeps at least 1 offspring slot
+        # so a single bad generation can't instantly collapse new species.
+        for i, sp in enumerate(self._species):
+            if budgets[i] == 0 and len(sp.members) >= 2:
+                budgets[i] = 1
         # Distribute rounding remainder to the top species
         remainder = self.pop_size - int(budgets.sum())
         if remainder > 0 and len(budgets) > 0:
@@ -290,6 +354,27 @@ class NEAT(NEAlgorithm):
             for i in range(deficit):
                 if budgets[order[i % len(order)]] > 0:
                     budgets[order[i % len(order)]] -= 1
+
+        # --- Telemetry: emit one row per species we just budgeted, plus rows
+        # for retired species so the diagnostic plots can compute "improvement
+        # rate at retirement". ---
+        for i, sp in enumerate(self._species):
+            self._record_species(sp, raw_fit, improvement_rates[i],
+                                 int(budgets[i]), retired=False)
+        for sp_id in retired_ids:
+            # Look up the retired species' last-known stats from the history;
+            # we don't have member info anymore so emit zeros there.
+            hist = self._species_max_fit_history.get(sp_id)
+            last_max = float(hist[-1]) if hist and len(hist) > 0 else float("nan")
+            rate = (max(0.0, hist[-1] - hist[0]) if hist and len(hist) >= 2
+                    else float("nan"))
+            self._telemetry.add(SpeciesGenStats(
+                generation=self._generation, species_id=sp_id,
+                n_members=0, age=-1,
+                max_fit=last_max, mean_fit=float("nan"), fit_var=float("nan"),
+                n_conns_avg=float("nan"), n_hidden_avg=float("nan"),
+                improvement_rate=rate, n_offspring=0, retired=1,
+            ))
 
         # --- Breed next generation ---
         next_pop: List[Genome] = []
@@ -361,6 +446,74 @@ class NEAT(NEAlgorithm):
             "best_conns": int(best_conns),
             "best_hidden": int(best_hidden),
         }
+
+    # ------------------------------------------------------ adaptive budgeting
+
+    def _compute_species_weights(self,
+                                 fitness_totals: np.ndarray,
+                                 improvement_rates: np.ndarray) -> np.ndarray:
+        """Per-species allocation weight, dispatched on ``protection_mode``.
+
+        ``fitness`` reproduces classic NEAT (sum of fitness-shared scores).
+        ``improvement`` weights species by recent Δmax_fit; species younger
+        than ``improvement_window`` (rate=NaN) fall back to fitness so newborn
+        species aren't immediately starved. ``hybrid`` is a normalized
+        convex combination of the two.
+        """
+        rates = np.where(
+            np.isnan(improvement_rates),
+            fitness_totals,  # fallback for too-young species
+            improvement_rates)
+        if self.protection_mode == "fitness":
+            return fitness_totals
+        if self.protection_mode == "improvement":
+            # Add a small share of fitness as a floor so a generation with
+            # zero improvement everywhere doesn't collapse to a single species.
+            return rates + 1e-3 * fitness_totals
+        # hybrid
+        f_sum = float(fitness_totals.sum())
+        r_sum = float(rates.sum())
+        f_norm = fitness_totals / f_sum if f_sum > 0 else fitness_totals
+        r_norm = rates / r_sum if r_sum > 0 else rates
+        w = self.improvement_weight
+        return (1.0 - w) * f_norm + w * r_norm
+
+    def _record_species(self,
+                        sp: Species,
+                        raw_fit: np.ndarray,
+                        improvement_rate: float,
+                        n_offspring: int,
+                        retired: bool) -> None:
+        """Append one telemetry row for the given species this generation."""
+        member_fits = np.array([raw_fit[m] for m in sp.members],
+                               dtype=np.float64) if sp.members else np.array([])
+        n_conns = np.array([
+            sum(1 for c in self._population[m].connections if c.enabled)
+            for m in sp.members
+        ], dtype=np.float64) if sp.members else np.array([])
+        n_hidden = np.array([
+            len(self._population[m].hidden_nodes) for m in sp.members
+        ], dtype=np.float64) if sp.members else np.array([])
+        self._telemetry.add(SpeciesGenStats(
+            generation=self._generation,
+            species_id=sp.species_id,
+            n_members=len(sp.members),
+            age=self._generation - sp.birth_gen,
+            max_fit=float(member_fits.max()) if member_fits.size else float("nan"),
+            mean_fit=float(member_fits.mean()) if member_fits.size else float("nan"),
+            fit_var=float(member_fits.var()) if member_fits.size else float("nan"),
+            n_conns_avg=float(n_conns.mean()) if n_conns.size else float("nan"),
+            n_hidden_avg=float(n_hidden.mean()) if n_hidden.size else float("nan"),
+            improvement_rate=float(improvement_rate),
+            n_offspring=int(n_offspring),
+            retired=int(retired),
+        ))
+
+    def flush_telemetry(self, path: Optional[str] = None) -> Optional[str]:
+        """Write per-species telemetry to CSV. Returns path or None if no-op."""
+        if path is None and self._telemetry.output_path is None:
+            return None
+        return self._telemetry.flush(path)
 
     def _log_topology(self) -> None:
         s = self.topology_stats()

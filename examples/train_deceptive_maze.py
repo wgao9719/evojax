@@ -68,6 +68,17 @@ def parse_args():
     parser.add_argument("--add-node-rate", type=float, default=0.06)
     parser.add_argument("--add-connection-rate", type=float, default=0.12)
     parser.add_argument("--compat-threshold", type=float, default=2.0)
+    # NEAT species-protection (Phase 2 intervention)
+    parser.add_argument("--neat-protection",
+                        choices=["fitness", "improvement", "hybrid"],
+                        default="fitness",
+                        help="Per-species offspring budget formula.")
+    parser.add_argument("--improvement-window", type=int, default=5,
+                        help="Window size for per-species Δmax_fit.")
+    parser.add_argument("--improvement-weight", type=float, default=0.5,
+                        help="Weight on improvement rate in hybrid mode.")
+    parser.add_argument("--telemetry", action="store_true",
+                        help="Save per-species per-gen CSV to log_dir/species_history.csv")
     # HyperNEAT-specific
     parser.add_argument("--hyperneat-hidden", type=int, nargs="*", default=[8, 8],
                         help="Substrate hidden-layer sizes (e.g. 8 8).")
@@ -87,7 +98,7 @@ def parse_args():
     return parser.parse_known_args()[0]
 
 
-def build_policy_and_solver(cfg, train_task):
+def build_policy_and_solver(cfg, train_task, telemetry_path=None):
     n_inputs = train_task.obs_shape[0]
     n_outputs = train_task.act_shape[0]
     if cfg.algo == "neat":
@@ -109,6 +120,10 @@ def build_policy_and_solver(cfg, train_task):
             parsimony_weight=0.0,
             add_connection_rate=cfg.add_connection_rate,
             add_node_rate=cfg.add_node_rate,
+            protection_mode=cfg.neat_protection,
+            improvement_window=cfg.improvement_window,
+            improvement_weight=cfg.improvement_weight,
+            telemetry_path=telemetry_path,
             seed=cfg.seed,
         )
         assert policy.num_params == solver.param_size
@@ -140,6 +155,10 @@ def build_policy_and_solver(cfg, train_task):
             add_node_rate=cfg.add_node_rate,
             activation_set=["tanh", "sin", "gauss", "abs", "sigmoid", "identity"],
             mutate_activation_rate=0.05,
+            protection_mode=cfg.neat_protection,
+            improvement_window=cfg.improvement_window,
+            improvement_weight=cfg.improvement_weight,
+            telemetry_path=telemetry_path,
             seed=cfg.seed,
         )
         assert policy.num_params == solver.param_size, (
@@ -185,7 +204,10 @@ def main(cfg):
                                sparse_reward=sparse, layout=cfg.layout)
     test_task = DeceptiveMaze(max_steps=cfg.max_steps, test=True,
                               sparse_reward=sparse, layout=cfg.layout)
-    policy, solver = build_policy_and_solver(cfg, train_task)
+    telemetry_path = (os.path.join(cfg.log_dir, "species_history.csv")
+                      if (cfg.telemetry and cfg.algo in {"neat", "hyperneat"})
+                      else None)
+    policy, solver = build_policy_and_solver(cfg, train_task, telemetry_path)
     logger.info("Policy num_params=%d", policy.num_params)
 
     sim_mgr = SimManager(
@@ -257,6 +279,10 @@ def main(cfg):
     if best_params is not None:
         np.savez(os.path.join(cfg.log_dir, "best.npz"),
                  params=best_params, best_raw_score=best_raw_score)
+    if telemetry_path is not None and hasattr(solver, "flush_telemetry"):
+        out = solver.flush_telemetry()
+        if out:
+            logger.info("Wrote species telemetry -> %s", out)
     logger.info("Training done. best_raw_score=%.3f", best_raw_score)
 
 
